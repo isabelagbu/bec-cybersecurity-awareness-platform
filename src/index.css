@@ -155,23 +155,6 @@ button {
   z-index: 100;
 }
 
-.start-button {
-  background: var(--accent-color);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: "Segoe UI", sans-serif;
-  transition: background 0.2s;
-}
-
-.start-button:hover {
-  background: var(--accent-hover);
-}
-
 .taskbar-items {
   flex: 1;
   display: flex;

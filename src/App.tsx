@@ -500,10 +500,6 @@ function App() {
   const currentJourneyTasks = currentJourney?.tasks ?? PHISHING_TASKS
 
   useEffect(() => {
-    playSound('notify')
-  }, [])
-
-  useEffect(() => {
     setLinkWarningVisible(false)
   }, [selectedEmailId])
 
@@ -793,6 +789,9 @@ function App() {
       setCallSeconds(0)
       setCallCaptionIndex(-1)
       setJourneyOpen(true)
+      setWindowOpen(false)
+      setMinimized(false)
+      setMaximized(false)
     }
   }
 
@@ -1226,7 +1225,6 @@ function App() {
       </div>
 
       <div className="windows-taskbar">
-        <button className="start-button" title="Start">Start</button>
         <div className="taskbar-items">
           {windowOpen && minimized && (
             <button className="taskbar-app-item" onClick={() => setMinimized(false)}>
