@@ -580,6 +580,45 @@ button {
   white-space: pre-wrap;
 }
 
+.mail-body-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #1a73e8;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.mail-body-link:hover {
+  color: #1558b0;
+}
+
+.mail-link-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(230, 90, 90, 0.12);
+  border: 1px solid rgba(230, 90, 90, 0.4);
+  border-radius: 4px;
+  color: #c0392b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mail-link-warning button {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  background: #c0392b;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .mail-empty-state {
   color: var(--text-secondary);
   font-size: 13px;
@@ -1124,6 +1163,53 @@ button {
   font-size: 12px;
   font-style: italic;
   color: var(--text-secondary);
+}
+
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.welcome-card {
+  width: min(440px, calc(100% - 48px));
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.welcome-badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+
+.welcome-title {
+  margin: 0 0 14px;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+.welcome-text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.welcome-button {
+  margin-top: 12px;
 }
 
 .journey-button {
