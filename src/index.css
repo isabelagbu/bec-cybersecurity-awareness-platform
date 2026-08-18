@@ -221,7 +221,7 @@ button {
   flex: 1;
   padding: 18px;
   margin-bottom: 48px;
-  background: var(--bg-primary);
+  background: linear-gradient(135deg, #0b2a5e 0%, #1c4f9c 45%, #4f8fdb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,7 +231,7 @@ button {
   position: absolute;
   font-size: 280px;
   font-weight: 900;
-  color: var(--watermark-color);
+  color: rgba(255, 255, 255, 0.12);
   letter-spacing: -12px;
   text-align: center;
   pointer-events: none;
@@ -277,16 +277,16 @@ button {
 
 .desktop-icon-label {
   font-size: 13px;
-  color: var(--text-primary);
+  color: #ffffff;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .window-frame {
   position: absolute;
   left: 220px;
   top: 60px;
-  width: min(980px, calc(100% - 240px));
+  width: min(1040px, calc(100% - 240px));
   min-width: 420px;
   min-height: 360px;
   max-width: calc(100% - 240px);
@@ -585,7 +585,285 @@ button {
   font-size: 13px;
 }
 
+.messages-app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100%;
+}
+
+.messages-sidebar {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.messages-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  cursor: pointer;
+}
+
+.messages-list-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.messages-list-item.active {
+  background: var(--bg-tertiary);
+  box-shadow: inset 3px 0 0 var(--accent-color);
+}
+
+.messages-list-item-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.messages-contact-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.messages-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.messages-preview {
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messages-thread {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.messages-thread-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.messages-thread-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.messages-thread-handle {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.messages-bubbles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.messages-bubble-row {
+  display: flex;
+}
+
+.messages-bubble-row.me {
+  justify-content: flex-end;
+}
+
+.messages-bubble-row.them {
+  justify-content: flex-start;
+}
+
+.messages-bubble {
+  max-width: 75%;
+  padding: 9px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.messages-bubble.me {
+  background: var(--accent-color);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.messages-bubble.them {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.phone-app {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100%;
+}
+
+.phone-call-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.phone-call-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-call-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.phone-call-item.active {
+  background: var(--bg-tertiary);
+  box-shadow: inset 3px 0 0 var(--accent-color);
+}
+
+.phone-direction-icon {
+  font-size: 14px;
+  font-weight: 700;
+  color: #3ca05a;
+  width: 16px;
+  text-align: center;
+}
+
+.phone-direction-icon.missed {
+  color: #c0392b;
+}
+
+.phone-call-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.phone-call-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.phone-call-name.missed {
+  color: #c0392b;
+}
+
+.phone-call-number {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.phone-call-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.phone-detail-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  overflow-y: auto;
+}
+
+.phone-avatar {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.phone-detail-name {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.phone-detail-number {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.phone-detail-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.phone-call-button {
+  width: auto;
+  padding: 8px 22px;
+}
+
+.phone-voicemail {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.phone-voicemail-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.phone-voicemail p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
 .content-topbar {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -594,6 +872,22 @@ button {
   padding: 10px 16px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
+}
+
+.topbar-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  background: var(--border-color);
+  overflow: hidden;
+}
+
+.topbar-progress-fill {
+  height: 100%;
+  background: var(--accent-color);
+  transition: width 0.3s ease;
 }
 
 .content-topbar-title {
@@ -730,6 +1024,198 @@ button {
   height: 32px;
   background: rgba(0, 0, 0, 0.1);
   margin: 0 4px;
+}
+
+.attack-complete {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.dropdown-menu li.selected .attack-complete {
+  color: #ffffff;
+}
+
+.coach-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 64px;
+  width: min(320px, calc(100% - 40px));
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  padding: 16px 18px;
+  z-index: 150;
+}
+
+.coach-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.coach-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+}
+
+.coach-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.journey-voice-toggle {
+  background: transparent;
+  border: none;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.journey-voice-toggle:hover {
+  background: var(--bg-secondary);
+}
+
+.journey-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.journey-close:hover {
+  color: var(--text-primary);
+}
+
+.coach-narration {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.narration-highlight {
+  background: #ffd23f;
+  color: #1d1d1d;
+  border-radius: 3px;
+  padding: 1px 2px;
+}
+
+.coach-instruction {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.coach-hint {
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.journey-button {
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.journey-button.primary {
+  background: var(--accent-color);
+  color: #ffffff;
+  border: none;
+}
+
+.journey-button.primary:hover {
+  background: var(--accent-hover);
+}
+
+.mail-decision {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.mail-decision-feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.mail-decision-feedback.correct {
+  background: rgba(60, 160, 90, 0.15);
+  color: #3ca05a;
+}
+
+.mail-decision-feedback.incorrect {
+  background: rgba(230, 90, 90, 0.12);
+  color: #c0392b;
+}
+
+.mail-decision-feedback button {
+  padding: 4px 10px;
+  background: #3ca05a;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mail-decision-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.mail-decision-button {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mail-decision-button.report {
+  background: var(--accent-color);
+  color: #ffffff;
+  border: none;
+}
+
+.mail-decision-button.report:hover {
+  background: var(--accent-hover);
+}
+
+.mail-decision-button.trust {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.mail-decision-button.trust:hover {
+  background: var(--bg-secondary);
 }
 
 @media (max-width: 900px) {
