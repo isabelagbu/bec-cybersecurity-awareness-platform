@@ -59,6 +59,15 @@ const INBOX_EMAILS: Email[] = [
     time: 'Mon',
     link: 'membership-records-secure247.com/verify-account',
   },
+  {
+    id: '6',
+    sender: 'Amara Okonkwo',
+    senderEmail: 'amara.o@blackengineer5.ca',
+    subject: 'Quick favor - need the attendee list',
+    preview: "Hey, it's Amara - quick favor, can you send me...",
+    body: "Hey, it's Amara - quick favor! Can you send me the attendee list from Thursday's chapter meetup? I need it for the grant report that's due today and my laptop's being weird. Just reply here with the list.\n\nThanks so much!",
+    time: '2:18 PM',
+  },
 ]
 
 const SENT_EMAILS: Email[] = [
@@ -264,6 +273,56 @@ const PHISHING_TASKS: Task[] = [
 
 const PHISHING_TARGET_EMAIL_ID = '5'
 
+const SPEAR_PHISHING_TASKS: Task[] = [
+  {
+    id: 'intro',
+    narration:
+      "Welcome to Spear Phishing Training. In this module, you'll learn what spear phishing is, how it's different from regular phishing, and how to handle it when it targets you specifically. Spear phishing is a targeted attack - instead of a generic message sent to thousands of people, the attacker researches a specific person or team first and crafts a message that looks like it's genuinely meant for them, often impersonating someone you already know and trust. You're going to go through a simulated inbox and handle one exactly like you would at work.",
+    instruction: 'Click Start when you\'re ready.',
+  },
+  {
+    id: 'open-mail',
+    narration: 'First, open your Mail app from the desktop.',
+    instruction: 'Open the Mail app.',
+  },
+  {
+    id: 'open-email',
+    narration:
+      "Nice work opening Mail. Now check your inbox - one of these emails is impersonating someone you already trust. Open the message that looks like it's from Amara Okonkwo.",
+    instruction: 'Open the email "Quick favor - need the attendee list."',
+  },
+  {
+    id: 'decide',
+    narration:
+      "You found it. Now look closely at the sender's email address, not just the display name - does it really match the Amara you know? Whatever you decide, don't reply with the information requested.",
+    instruction: 'Decide: report it as phishing, or trust it.',
+  },
+  {
+    id: 'outro',
+    narration:
+      "Nice work. Here's what gave it away: the display name says Amara Okonkwo, but the actual email domain is blackengineer5.ca, not blackengineers.ca - a look-alike domain built specifically to impersonate someone on your team. It also creates urgency with a tight deadline and asks you to hand over information over email instead of verifying another way.",
+    instruction: 'Continue to finish up.',
+  },
+  {
+    id: 'complete',
+    narration:
+      "Good job! You've completed the Spear Phishing training. A few extra tips to take with you: always double check the sender's actual email address, even when the display name looks familiar. Be suspicious of urgent, out-of-the-blue requests, even from people you know - attackers count on you trusting the name you see. When in doubt, verify through a different channel, like calling or messaging the person directly, not by replying to the email. And report anything that feels off to IT, even if you're not fully sure.",
+    instruction: "You've completed this module.",
+  },
+]
+
+const SPEAR_PHISHING_TARGET_EMAIL_ID = '6'
+
+type AttackJourney = {
+  targetEmailId: string
+  tasks: Task[]
+}
+
+const ATTACK_JOURNEYS: Partial<Record<string, AttackJourney>> = {
+  Phishing: { targetEmailId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
+  'Spear Phishing': { targetEmailId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
+}
+
 function renderNarration(text: string, spokenCharIndex: number) {
   const tokens = text.split(/(\s+)/)
   let cursor = 0
@@ -295,6 +354,7 @@ function App() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(CONVERSATIONS[0].id)
   const [selectedCallId, setSelectedCallId] = useState<string | null>(CALL_LOG[0].id)
   const [journeyOpen, setJourneyOpen] = useState(false)
+  const [activeJourneyAttack, setActiveJourneyAttack] = useState<string | null>(null)
   const [taskIndex, setTaskIndex] = useState(0)
   const [decisionFeedback, setDecisionFeedback] = useState<'correct' | 'incorrect' | null>(null)
   const [linkWarningVisible, setLinkWarningVisible] = useState(false)
@@ -310,6 +370,9 @@ function App() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const restoreLayout = useRef({ position: windowPosition, size: windowSize })
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
+
+  const currentJourney = activeJourneyAttack ? ATTACK_JOURNEYS[activeJourneyAttack] : undefined
+  const currentJourneyTasks = currentJourney?.tasks ?? PHISHING_TASKS
 
   useEffect(() => {
     playSound('notify')
@@ -347,7 +410,7 @@ function App() {
       return
     }
 
-    const task = PHISHING_TASKS[taskIndex]
+    const task = currentJourneyTasks[taskIndex]
     const utterance = new SpeechSynthesisUtterance(task.narration)
     utterance.pitch = 1
     utterance.rate = 0.95
@@ -368,21 +431,21 @@ function App() {
     window.speechSynthesis.speak(utterance)
 
     return () => window.speechSynthesis.cancel()
-  }, [journeyOpen, taskIndex, voiceEnabled])
+  }, [journeyOpen, activeJourneyAttack, taskIndex, voiceEnabled])
 
   useEffect(() => {
-    if (!journeyOpen) return
+    if (!journeyOpen || !currentJourney) return
 
-    const currentTask = PHISHING_TASKS[taskIndex]
+    const currentTask = currentJourneyTasks[taskIndex]
 
     if (currentTask.id === 'open-mail' && activeApp === 'mail' && windowOpen && !minimized) {
       setTaskIndex((index) => index + 1)
     }
 
-    if (currentTask.id === 'open-email' && mailFolder === 'inbox' && selectedEmailId === PHISHING_TARGET_EMAIL_ID) {
+    if (currentTask.id === 'open-email' && mailFolder === 'inbox' && selectedEmailId === currentJourney.targetEmailId) {
       setTaskIndex((index) => index + 1)
     }
-  }, [journeyOpen, taskIndex, activeApp, windowOpen, minimized, mailFolder, selectedEmailId])
+  }, [journeyOpen, activeJourneyAttack, taskIndex, activeApp, windowOpen, minimized, mailFolder, selectedEmailId])
 
   useEffect(() => {
     if (!journeyOpen) return
@@ -521,7 +584,8 @@ function App() {
     playSound('click')
     setSelectedAttack(attack)
     setMenuOpen(false)
-    if (attack === 'Phishing') {
+    if (ATTACK_JOURNEYS[attack]) {
+      setActiveJourneyAttack(attack)
       setTaskIndex(0)
       setDecisionFeedback(null)
       setJourneyOpen(true)
@@ -546,8 +610,8 @@ function App() {
 
   const finishJourney = () => {
     playSound('success')
-    if (selectedAttack) {
-      setCompletedAttacks((prev) => new Set(prev).add(selectedAttack))
+    if (activeJourneyAttack) {
+      setCompletedAttacks((prev) => new Set(prev).add(activeJourneyAttack))
     }
     setJourneyOpen(false)
   }
@@ -609,7 +673,7 @@ function App() {
           <div className="topbar-progress">
             <div
               className="topbar-progress-fill"
-              style={{ width: `${((taskIndex + 1) / PHISHING_TASKS.length) * 100}%` }}
+              style={{ width: `${((taskIndex + 1) / currentJourneyTasks.length) * 100}%` }}
             />
           </div>
         )}
@@ -741,8 +805,9 @@ function App() {
                         </div>
                       )}
                       {journeyOpen &&
-                        PHISHING_TASKS[taskIndex].id === 'decide' &&
-                        selectedEmail.id === PHISHING_TARGET_EMAIL_ID && (
+                        currentJourneyTasks[taskIndex].id === 'decide' &&
+                        currentJourney &&
+                        selectedEmail.id === currentJourney.targetEmailId && (
                           <div className="mail-decision">
                             {decisionFeedback === 'correct' ? (
                               <div className="mail-decision-feedback correct">
@@ -889,7 +954,7 @@ function App() {
       {journeyOpen && (
         <div className="coach-panel">
           <div className="coach-header">
-            <span className="coach-badge">Phishing Training</span>
+            <span className="coach-badge">{activeJourneyAttack} Training</span>
             <div className="coach-header-actions">
               <button
                 className="journey-voice-toggle"
@@ -901,26 +966,26 @@ function App() {
               <button className="journey-close" title="Close" onClick={() => setJourneyOpen(false)}>×</button>
             </div>
           </div>
-          <p className="coach-narration">{renderNarration(PHISHING_TASKS[taskIndex].narration, spokenCharIndex)}</p>
-          <p className="coach-instruction">{PHISHING_TASKS[taskIndex].instruction}</p>
+          <p className="coach-narration">{renderNarration(currentJourneyTasks[taskIndex].narration, spokenCharIndex)}</p>
+          <p className="coach-instruction">{currentJourneyTasks[taskIndex].instruction}</p>
 
-          {PHISHING_TASKS[taskIndex].id === 'intro' && (
+          {currentJourneyTasks[taskIndex].id === 'intro' && (
             <button className="journey-button primary" onClick={() => { playSound('click'); setTaskIndex(1) }}>
               Start
             </button>
           )}
 
-          {(PHISHING_TASKS[taskIndex].id === 'open-mail' || PHISHING_TASKS[taskIndex].id === 'open-email') && (
+          {(currentJourneyTasks[taskIndex].id === 'open-mail' || currentJourneyTasks[taskIndex].id === 'open-email') && (
             <p className="coach-hint">Waiting for you to do this in the desktop...</p>
           )}
 
-          {PHISHING_TASKS[taskIndex].id === 'outro' && (
+          {currentJourneyTasks[taskIndex].id === 'outro' && (
             <button className="journey-button primary" onClick={() => { playSound('click'); setTaskIndex((index) => index + 1) }}>
               Continue
             </button>
           )}
 
-          {PHISHING_TASKS[taskIndex].id === 'complete' && (
+          {currentJourneyTasks[taskIndex].id === 'complete' && (
             <button className="journey-button primary" onClick={finishJourney}>
               Finish
             </button>
