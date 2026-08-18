@@ -237,7 +237,7 @@ const SOCIAL_ENGINEERING_ATTACKS = [
 ]
 
 type Task = {
-  id: 'intro' | 'open-mail' | 'open-email' | 'decide' | 'outro' | 'complete'
+  id: 'intro' | 'open-app' | 'open-item' | 'decide' | 'outro' | 'complete'
   narration: string
   instruction: string
 }
@@ -247,15 +247,15 @@ const PHISHING_TASKS: Task[] = [
     id: 'intro',
     narration:
       "Welcome to Phishing Training. In this module, you'll learn what phishing is, how to identify it, and how to handle it when it lands in your inbox. Phishing is when someone impersonates a trusted source - a company, a vendor, a coworker - usually by email, to trick you into handing over sensitive information or taking a harmful action. It's the most common form of social engineering. You're going to go through a simulated inbox and handle one exactly like you would at work.",
-    instruction: 'Click Start when you\'re ready.',
+    instruction: 'Click Start Training when you\'re ready.',
   },
   {
-    id: 'open-mail',
+    id: 'open-app',
     narration: 'First, open your Mail app from the desktop.',
     instruction: 'Open the Mail app.',
   },
   {
-    id: 'open-email',
+    id: 'open-item',
     narration:
       "Nice work opening Mail. Now check your inbox - one of these emails is trying to trick you. Open the message from Membership Records.",
     instruction: 'Open the email "Action Required: Verify Your Membership Details."',
@@ -287,15 +287,15 @@ const SPEAR_PHISHING_TASKS: Task[] = [
     id: 'intro',
     narration:
       "Welcome to Spear Phishing Training. In this module, you'll learn what spear phishing is, how it's different from regular phishing, and how to handle it when it targets you specifically. Spear phishing is a targeted attack - instead of a generic message sent to thousands of people, the attacker researches a specific person or team first and crafts a message that looks like it's genuinely meant for them, often impersonating someone you already know and trust. You're going to go through a simulated inbox and handle one exactly like you would at work.",
-    instruction: 'Click Start when you\'re ready.',
+    instruction: 'Click Start Training when you\'re ready.',
   },
   {
-    id: 'open-mail',
+    id: 'open-app',
     narration: 'First, open your Mail app from the desktop.',
     instruction: 'Open the Mail app.',
   },
   {
-    id: 'open-email',
+    id: 'open-item',
     narration:
       "Nice work opening Mail. Now check your inbox - one of these emails is impersonating someone you already trust. Open the message that looks like it's from Amara Okonkwo.",
     instruction: 'Open the email "Quick favor - need the attendee list."',
@@ -323,7 +323,8 @@ const SPEAR_PHISHING_TASKS: Task[] = [
 const SPEAR_PHISHING_TARGET_EMAIL_ID = '6'
 
 type AttackJourney = {
-  targetEmailId: string
+  app: 'mail' | 'phone'
+  targetId: string
   tasks: Task[]
 }
 
@@ -332,15 +333,15 @@ const WHALING_TASKS: Task[] = [
     id: 'intro',
     narration:
       "Welcome to Whaling Training. In this module, you'll learn what whaling is, how it's different from regular spear phishing, and how to handle it when you're the target. Whaling is spear phishing aimed specifically at senior executives or other high-access individuals - because the payoff is bigger, attackers invest more effort making the message look polished and legitimate, often without an obvious typo in sight. For this exercise, let's assume you're in a senior or executive position at Black Engineers of Canada, since whaling attacks target people specifically because of the access and authority they hold. You're going to go through a simulated inbox and handle one exactly like you would at work.",
-    instruction: 'Click Start when you\'re ready.',
+    instruction: 'Click Start Training when you\'re ready.',
   },
   {
-    id: 'open-mail',
+    id: 'open-app',
     narration: 'First, open your Mail app from the desktop.',
     instruction: 'Open the Mail app.',
   },
   {
-    id: 'open-email',
+    id: 'open-item',
     narration:
       "Nice work opening Mail. Now check your inbox - one of these emails is a polished, targeted request written specifically for someone in your assumed executive position. Open the message from Marcus Reyes.",
     instruction: 'Open the email "Confidential: Audit Committee Sign-Off Needed by Friday."',
@@ -367,10 +368,50 @@ const WHALING_TASKS: Task[] = [
 
 const WHALING_TARGET_EMAIL_ID = '7'
 
+const VISHING_TASKS: Task[] = [
+  {
+    id: 'intro',
+    narration:
+      "Welcome to Vishing Training. In this module, you'll learn what vishing is, how it differs from phishing over email, and how to handle it when it comes through as a phone call. Vishing, short for voice phishing, is a social engineering attack carried out over a phone call instead of email or text - an attacker calls pretending to be someone trustworthy, like tech support or your bank, to pressure you into revealing sensitive information, transferring money, or granting remote access to your computer. In a moment, you're going to get a simulated incoming call and handle it exactly like you would in real life.",
+    instruction: 'Click Start Training when you\'re ready.',
+  },
+  {
+    id: 'open-app',
+    narration: 'First, open your Phone app from the desktop.',
+    instruction: 'Open the Phone app.',
+  },
+  {
+    id: 'open-item',
+    narration: "Nice work opening Phone. A call is about to come in from an unknown number - answer it when it rings.",
+    instruction: 'Wait for the incoming call, then answer it.',
+  },
+  {
+    id: 'decide',
+    narration:
+      "You answered it. Now think carefully about what the caller is saying. Is this a legitimate call, or is it vishing?",
+    instruction: 'Decide: report it as phishing, or trust it.',
+  },
+  {
+    id: 'outro',
+    narration:
+      "Nice work. Here's what gave it away: Microsoft doesn't call you out of the blue about a virus on your computer, the caller creates urgency by claiming your account is about to be locked, and it wants you to call back a number it gave you instead of contacting the real company through a number you already trust.",
+    instruction: 'Continue to finish up.',
+  },
+  {
+    id: 'complete',
+    narration:
+      "Good job! You've completed the Vishing training. A few extra tips to take with you: as a general rule, it's safer not to answer calls from numbers you don't recognize - let them go to voicemail if you can. That said, sometimes you have to answer an unknown call because you don't know who it is or whether it's important, and that's okay too - just stay alert once you're on the line. Legitimate companies rarely call you unprompted about account or security problems. Never call back a number a suspicious caller gives you, whether it's spoken live or left in a voicemail - look up the real company's number yourself. Be skeptical of urgency and fear tactics over the phone, since a caller can improvise around your questions in ways a scam email can't. And if a call ever asks for remote access to your computer, hang up. Report suspicious calls the same way you'd report a phishing email.",
+    instruction: "You've completed this module.",
+  },
+]
+
+const VISHING_TARGET_CALL_ID = 'p2'
+
 const ATTACK_JOURNEYS: Partial<Record<string, AttackJourney>> = {
-  Phishing: { targetEmailId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
-  'Spear Phishing': { targetEmailId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
-  Whaling: { targetEmailId: WHALING_TARGET_EMAIL_ID, tasks: WHALING_TASKS },
+  Phishing: { app: 'mail', targetId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
+  'Spear Phishing': { app: 'mail', targetId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
+  Whaling: { app: 'mail', targetId: WHALING_TARGET_EMAIL_ID, tasks: WHALING_TASKS },
+  Vishing: { app: 'phone', targetId: VISHING_TARGET_CALL_ID, tasks: VISHING_TASKS },
 }
 
 function renderNarration(text: string, spokenCharIndex: number) {
@@ -390,6 +431,37 @@ function renderNarration(text: string, spokenCharIndex: number) {
   })
 }
 
+const FEMALE_VOICE_NAMES = [
+  'female',
+  'samantha',
+  'victoria',
+  'karen',
+  'moira',
+  'tessa',
+  'fiona',
+  'susan',
+  'allison',
+  'ava',
+  'serena',
+  'kate',
+  'amelie',
+  'zira',
+  'hazel',
+  'catherine',
+  'linda',
+  'heera',
+]
+
+function pickVoices(voices: SpeechSynthesisVoice[]) {
+  const english = voices.filter((voice) => voice.lang.startsWith('en'))
+  const narrator = english.find((voice) => voice.default) ?? english[0]
+  const caller =
+    english.find((voice) => FEMALE_VOICE_NAMES.some((name) => voice.name.toLowerCase().includes(name))) ??
+    english.find((voice) => voice.name !== narrator?.name) ??
+    narrator
+  return { narrator, caller }
+}
+
 function App() {
   const [windowPosition, setWindowPosition] = useState({ x: 220, y: 60 })
   const [windowSize, setWindowSize] = useState({ width: 1040, height: 660 })
@@ -403,6 +475,9 @@ function App() {
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(INBOX_EMAILS[0].id)
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(CONVERSATIONS[0].id)
   const [selectedCallId, setSelectedCallId] = useState<string | null>(CALL_LOG[0].id)
+  const [callPhase, setCallPhase] = useState<'idle' | 'ringing' | 'active' | 'ended'>('idle')
+  const [callSeconds, setCallSeconds] = useState(0)
+  const [callCaptionIndex, setCallCaptionIndex] = useState(-1)
   const [journeyOpen, setJourneyOpen] = useState(false)
   const [activeJourneyAttack, setActiveJourneyAttack] = useState<string | null>(null)
   const [taskIndex, setTaskIndex] = useState(0)
@@ -461,26 +536,36 @@ function App() {
     }
 
     const task = currentJourneyTasks[taskIndex]
+
+    // The simulated call has its own live narration during this step - don't talk over it.
+    if (currentJourney?.app === 'phone' && task.id === 'decide') {
+      setSpokenCharIndex(-1)
+      return
+    }
+
     const utterance = new SpeechSynthesisUtterance(task.narration)
     utterance.pitch = 1
     utterance.rate = 0.95
 
-    const voices = voicesRef.current
-    const preferredVoice =
-      voices.find((voice) => voice.lang.startsWith('en') && voice.default) ??
-      voices.find((voice) => voice.lang.startsWith('en'))
-    if (preferredVoice) {
-      utterance.voice = preferredVoice
+    const { narrator } = pickVoices(voicesRef.current)
+    if (narrator) {
+      utterance.voice = narrator
     }
 
     setSpokenCharIndex(0)
     utterance.onboundary = (event) => setSpokenCharIndex(event.charIndex)
     utterance.onend = () => setSpokenCharIndex(-1)
 
+    // Chrome sometimes silently drops speak() when it's called right after cancel(), or
+    // leaves the queue paused - a resume plus a brief delay works around both.
     window.speechSynthesis.cancel()
-    window.speechSynthesis.speak(utterance)
+    window.speechSynthesis.resume()
+    const speakTimer = setTimeout(() => window.speechSynthesis.speak(utterance), 50)
 
-    return () => window.speechSynthesis.cancel()
+    return () => {
+      clearTimeout(speakTimer)
+      window.speechSynthesis.cancel()
+    }
   }, [journeyOpen, activeJourneyAttack, taskIndex, voiceEnabled])
 
   useEffect(() => {
@@ -488,14 +573,80 @@ function App() {
 
     const currentTask = currentJourneyTasks[taskIndex]
 
-    if (currentTask.id === 'open-mail' && activeApp === 'mail' && windowOpen && !minimized) {
+    if (currentTask.id === 'open-app' && activeApp === currentJourney.app && windowOpen && !minimized) {
       setTaskIndex((index) => index + 1)
     }
 
-    if (currentTask.id === 'open-email' && mailFolder === 'inbox' && selectedEmailId === currentJourney.targetEmailId) {
-      setTaskIndex((index) => index + 1)
+    if (currentTask.id === 'open-item') {
+      if (currentJourney.app === 'mail' && mailFolder === 'inbox' && selectedEmailId === currentJourney.targetId) {
+        setTaskIndex((index) => index + 1)
+      }
+      if (currentJourney.app === 'phone') {
+        if (activeApp === 'phone' && windowOpen && !minimized && callPhase === 'idle') {
+          setCallPhase('ringing')
+        }
+        if (callPhase === 'active') {
+          setTaskIndex((index) => index + 1)
+        }
+      }
     }
-  }, [journeyOpen, activeJourneyAttack, taskIndex, activeApp, windowOpen, minimized, mailFolder, selectedEmailId])
+  }, [
+    journeyOpen,
+    activeJourneyAttack,
+    taskIndex,
+    activeApp,
+    windowOpen,
+    minimized,
+    mailFolder,
+    selectedEmailId,
+    callPhase,
+  ])
+
+  useEffect(() => {
+    if (callPhase !== 'ringing') return
+    playSound('ring')
+    const interval = setInterval(() => playSound('ring'), 2500)
+    return () => clearInterval(interval)
+  }, [callPhase])
+
+  useEffect(() => {
+    if (callPhase !== 'active') return
+
+    const script = CALL_LOG.find((call) => call.id === VISHING_TARGET_CALL_ID)?.voicemail ?? ''
+
+    if (!voiceEnabled) {
+      setCallCaptionIndex(-1)
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance(script)
+    utterance.pitch = 1.1
+    utterance.rate = 1
+
+    const { caller } = pickVoices(voicesRef.current)
+    if (caller) {
+      utterance.voice = caller
+    }
+
+    setCallCaptionIndex(0)
+    utterance.onboundary = (event) => setCallCaptionIndex(event.charIndex)
+    utterance.onend = () => setCallPhase((phase) => (phase === 'active' ? 'ended' : phase))
+
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.resume()
+    const speakTimer = setTimeout(() => window.speechSynthesis.speak(utterance), 50)
+
+    return () => {
+      clearTimeout(speakTimer)
+      window.speechSynthesis.cancel()
+    }
+  }, [callPhase, voiceEnabled])
+
+  useEffect(() => {
+    if (callPhase !== 'active') return
+    const interval = setInterval(() => setCallSeconds((seconds) => seconds + 1), 1000)
+    return () => clearInterval(interval)
+  }, [callPhase])
 
   useEffect(() => {
     if (!journeyOpen) return
@@ -638,8 +789,31 @@ function App() {
       setActiveJourneyAttack(attack)
       setTaskIndex(0)
       setDecisionFeedback(null)
+      setCallPhase('idle')
+      setCallSeconds(0)
+      setCallCaptionIndex(-1)
       setJourneyOpen(true)
     }
+  }
+
+  const closeJourney = () => {
+    playSound('click')
+    window.speechSynthesis.cancel()
+    setJourneyOpen(false)
+    setCallPhase('idle')
+    setCallSeconds(0)
+    setCallCaptionIndex(-1)
+  }
+
+  const acceptCall = () => {
+    playSound('click')
+    setCallPhase('active')
+  }
+
+  const hangUpCall = () => {
+    playSound('click')
+    window.speechSynthesis.cancel()
+    setCallPhase('ended')
   }
 
   const handleDecision = (choice: 'report' | 'trust') => {
@@ -655,6 +829,9 @@ function App() {
   const continueAfterDecision = () => {
     playSound('click')
     setDecisionFeedback(null)
+    setCallPhase('idle')
+    setCallSeconds(0)
+    setCallCaptionIndex(-1)
     setTaskIndex((index) => index + 1)
   }
 
@@ -665,6 +842,31 @@ function App() {
     }
     setJourneyOpen(false)
   }
+
+  const callDecisionBlock = (
+    <div className="mail-decision phone-decision">
+      {decisionFeedback === 'correct' ? (
+        <div className="mail-decision-feedback correct">
+          ✅ Correct - this is vishing. <button onClick={continueAfterDecision}>Continue</button>
+        </div>
+      ) : decisionFeedback === 'incorrect' ? (
+        <div className="mail-decision-feedback incorrect">
+          ⚠️ Not quite - think about why this caller wants you to call back their number instead of the real
+          company's.
+        </div>
+      ) : null}
+      {decisionFeedback !== 'correct' && (
+        <div className="mail-decision-buttons">
+          <button className="mail-decision-button report" onClick={() => handleDecision('report')}>
+            🚩 Report as Phishing
+          </button>
+          <button className="mail-decision-button trust" onClick={() => handleDecision('trust')}>
+            ✅ Looks Legitimate
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <main className={`windows-desktop ${theme}-mode`}>
@@ -856,8 +1058,8 @@ function App() {
                       )}
                       {journeyOpen &&
                         currentJourneyTasks[taskIndex].id === 'decide' &&
-                        currentJourney &&
-                        selectedEmail.id === currentJourney.targetEmailId && (
+                        currentJourney?.app === 'mail' &&
+                        selectedEmail.id === currentJourney.targetId && (
                           <div className="mail-decision">
                             {decisionFeedback === 'correct' ? (
                               <div className="mail-decision-feedback correct">
@@ -928,7 +1130,50 @@ function App() {
                 </div>
               </div>
             )}
-            {activeApp === 'phone' && (
+            {activeApp === 'phone' && journeyOpen && currentJourney?.app === 'phone' && callPhase !== 'idle' && (
+              <div className="call-screen">
+                {callPhase === 'ringing' && (
+                  <>
+                    <div className="call-avatar-large ringing">📵</div>
+                    <h3 className="call-screen-name">Unknown Caller</h3>
+                    <span className="call-screen-number">+1 (807) 555-4471</span>
+                    <span className="call-screen-status pulsing">Incoming call...</span>
+                    <div className="call-screen-actions">
+                      <button className="call-action-button decline-disabled" title="Decline" disabled>
+                        🚫
+                      </button>
+                      <button className="call-action-button accept" title="Answer" onClick={acceptCall}>
+                        📞
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {(callPhase === 'active' || callPhase === 'ended') && (
+                  <>
+                    <div className="call-avatar-large">📵</div>
+                    <h3 className="call-screen-name">Unknown Caller</h3>
+                    <span className="call-screen-status">
+                      {callPhase === 'active' ? 'In call' : 'Call ended'} - {Math.floor(callSeconds / 60)}:
+                      {String(callSeconds % 60).padStart(2, '0')}
+                    </span>
+                    <div className="call-captions">
+                      {renderNarration(
+                        CALL_LOG.find((call) => call.id === VISHING_TARGET_CALL_ID)?.voicemail ?? '',
+                        callPhase === 'active' ? callCaptionIndex : -1,
+                      )}
+                    </div>
+                    {callPhase === 'active' && (
+                      <button className="call-action-button decline hang-up" title="Hang Up" onClick={hangUpCall}>
+                        ☎️
+                      </button>
+                    )}
+                    {callPhase === 'ended' && callDecisionBlock}
+                  </>
+                )}
+              </div>
+            )}
+            {activeApp === 'phone' && !(journeyOpen && currentJourney?.app === 'phone' && callPhase !== 'idle') && (
               <div className="phone-app">
                 <div className="phone-call-list">
                   {CALL_LOG.map((call) => (
@@ -1013,7 +1258,7 @@ function App() {
               >
                 {voiceEnabled ? '🔊' : '🔇'}
               </button>
-              <button className="journey-close" title="Close" onClick={() => setJourneyOpen(false)}>×</button>
+              <button className="journey-close" title="Close" onClick={closeJourney}>×</button>
             </div>
           </div>
           <p className="coach-narration">{renderNarration(currentJourneyTasks[taskIndex].narration, spokenCharIndex)}</p>
@@ -1021,11 +1266,11 @@ function App() {
 
           {currentJourneyTasks[taskIndex].id === 'intro' && (
             <button className="journey-button primary" onClick={() => { playSound('click'); setTaskIndex(1) }}>
-              Start
+              Start Training
             </button>
           )}
 
-          {(currentJourneyTasks[taskIndex].id === 'open-mail' || currentJourneyTasks[taskIndex].id === 'open-email') && (
+          {(currentJourneyTasks[taskIndex].id === 'open-app' || currentJourneyTasks[taskIndex].id === 'open-item') && (
             <p className="coach-hint">Waiting for you to do this in the desktop...</p>
           )}
 

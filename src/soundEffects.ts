@@ -1,4 +1,4 @@
-type SoundKind = 'click' | 'notify' | 'success' | 'error'
+type SoundKind = 'click' | 'notify' | 'success' | 'error' | 'ring'
 
 let audioContext: AudioContext | null = null
 
@@ -46,6 +46,12 @@ export function playSound(kind: SoundKind) {
       break
     case 'error':
       playTone(220, 0.18, 0, 0.14)
+      break
+    case 'ring':
+      playTone(480, 0.4, 0, 0.1)
+      playTone(620, 0.4, 0, 0.1)
+      playTone(480, 0.4, 0.5, 0.1)
+      playTone(620, 0.4, 0.5, 0.1)
       break
   }
 }
