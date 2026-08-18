@@ -68,6 +68,15 @@ const INBOX_EMAILS: Email[] = [
     body: "Hey, it's Amara - quick favor! Can you send me the attendee list from Thursday's chapter meetup? I need it for the grant report that's due today and my laptop's being weird. Just reply here with the list.\n\nThanks so much!",
     time: '2:18 PM',
   },
+  {
+    id: '7',
+    sender: 'Marcus Reyes',
+    senderEmail: 'mreyes@obc-auditpartners.com',
+    subject: 'Confidential: Audit Committee Sign-Off Needed by Friday',
+    preview: 'Following our engagement with the Board, I need your signed authorization...',
+    body: "Hi,\n\nFollowing our engagement with the Board, I need your signed authorization on the attached financial statement before Friday's audit committee meeting. Given the sensitivity, please reply directly to confirm rather than looping in the rest of the team until the committee has convened.\n\nRegards,\nMarcus Reyes\nSenior Partner, OBC Audit Partners",
+    time: '4:02 PM',
+  },
 ]
 
 const SENT_EMAILS: Email[] = [
@@ -318,9 +327,50 @@ type AttackJourney = {
   tasks: Task[]
 }
 
+const WHALING_TASKS: Task[] = [
+  {
+    id: 'intro',
+    narration:
+      "Welcome to Whaling Training. In this module, you'll learn what whaling is, how it's different from regular spear phishing, and how to handle it when you're the target. Whaling is spear phishing aimed specifically at senior executives or other high-access individuals - because the payoff is bigger, attackers invest more effort making the message look polished and legitimate, often without an obvious typo in sight. For this exercise, let's assume you're in a senior or executive position at Black Engineers of Canada, since whaling attacks target people specifically because of the access and authority they hold. You're going to go through a simulated inbox and handle one exactly like you would at work.",
+    instruction: 'Click Start when you\'re ready.',
+  },
+  {
+    id: 'open-mail',
+    narration: 'First, open your Mail app from the desktop.',
+    instruction: 'Open the Mail app.',
+  },
+  {
+    id: 'open-email',
+    narration:
+      "Nice work opening Mail. Now check your inbox - one of these emails is a polished, targeted request written specifically for someone in your assumed executive position. Open the message from Marcus Reyes.",
+    instruction: 'Open the email "Confidential: Audit Committee Sign-Off Needed by Friday."',
+  },
+  {
+    id: 'decide',
+    narration:
+      "You found it. Read it carefully - there's no obvious typo here. Look instead at what it's asking you to do and how it's asking you to do it. Is it legitimate, or is it whaling?",
+    instruction: 'Decide: report it as phishing, or trust it.',
+  },
+  {
+    id: 'outro',
+    narration:
+      "Nice work. Here's what gave it away: it asks you to keep this from your own team instead of looping in anyone who could verify it, it creates urgency around a real-sounding deadline, and it asks for a signed authorization over email reply instead of through your organization's actual approval process. Whaling attacks often don't rely on obvious typos - the manipulation tactics themselves are the tell.",
+    instruction: 'Continue to finish up.',
+  },
+  {
+    id: 'complete',
+    narration:
+      "Good job! You've completed the Whaling training. A few extra tips to take with you: attackers targeting senior or high-access people invest extra effort, so don't rely on typos or bad grammar to spot it. Treat any request to keep something secret from your own team or bypass normal approval steps as a red flag, no matter how polished it looks. When in doubt, verify independently - call a number you already have, or ask a colleague directly - rather than replying to the email. And report it to IT even if you're not fully sure.",
+    instruction: "You've completed this module.",
+  },
+]
+
+const WHALING_TARGET_EMAIL_ID = '7'
+
 const ATTACK_JOURNEYS: Partial<Record<string, AttackJourney>> = {
   Phishing: { targetEmailId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
   'Spear Phishing': { targetEmailId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
+  Whaling: { targetEmailId: WHALING_TARGET_EMAIL_ID, tasks: WHALING_TASKS },
 }
 
 function renderNarration(text: string, spokenCharIndex: number) {
