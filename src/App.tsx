@@ -9,6 +9,7 @@ type Email = {
   preview: string
   body: string
   time: string
+  link?: string
 }
 
 const INBOX_EMAILS: Email[] = [
@@ -54,8 +55,9 @@ const INBOX_EMAILS: Email[] = [
     senderEmail: 'verify@membership-records-secure247.com',
     subject: 'Action Required: Verify Your Membership Details',
     preview: 'Your membership record is incomplete, please verify your personal information...',
-    body: 'Your membership record is incomplete. To keep your account active, click the link below and verify your full name, date of birth, and banking details within 24 hours.\n\nVerify now: [link]',
+    body: 'Your membership record is incomplete. To keep your account active, click the link below and verify your full name, date of birth, and banking details within 24 hours.',
     time: 'Mon',
+    link: 'membership-records-secure247.com/verify-account',
   },
 ]
 
@@ -226,7 +228,7 @@ const PHISHING_TASKS: Task[] = [
   {
     id: 'intro',
     narration:
-      "Phishing is when someone impersonates a trusted source - a company, a vendor, a coworker - usually by email, to trick you into handing over sensitive information or taking a harmful action. It's the most common form of social engineering. You're going to go through a simulated inbox and handle one exactly like you would at work.",
+      "Welcome to Phishing Training. In this module, you'll learn what phishing is, how to identify it, and how to handle it when it lands in your inbox. Phishing is when someone impersonates a trusted source - a company, a vendor, a coworker - usually by email, to trick you into handing over sensitive information or taking a harmful action. It's the most common form of social engineering. You're going to go through a simulated inbox and handle one exactly like you would at work.",
     instruction: 'Click Start when you\'re ready.',
   },
   {
@@ -243,8 +245,8 @@ const PHISHING_TASKS: Task[] = [
   {
     id: 'decide',
     narration:
-      'You found it. Now look at the sender address and the tone of this message. Is it legitimate, or is it phishing?',
-    instruction: 'Decide: report it as phishing, or trust it.',
+      "You found it. Now look at the sender address and the tone of this message. Is it legitimate, or is it phishing? Whatever you decide, don't click the link inside - even out of curiosity.",
+    instruction: 'Decide: report it as phishing, or trust it - without clicking the link.',
   },
   {
     id: 'outro',
@@ -255,7 +257,7 @@ const PHISHING_TASKS: Task[] = [
   {
     id: 'complete',
     narration:
-      "Good job! You've completed the Phishing training. A few extra tips to take with you: always check the sender's actual email address, not just the display name. Never enter personal or financial information through a link in an email. Verify unexpected requests by contacting the person or company directly through a number or website you already trust. And report suspicious emails to IT instead of just deleting them.",
+      "Good job! You've completed the Phishing training. A few extra tips to take with you: never click links in emails you don't fully trust, even out of curiosity. Always check the sender's actual email address, not just the display name. Never enter personal or financial information through a link in an email. Verify unexpected requests by contacting the person or company directly through a number or website you already trust. And report suspicious emails to IT instead of just deleting them.",
     instruction: "You've completed this module.",
   },
 ]
@@ -295,9 +297,11 @@ function App() {
   const [journeyOpen, setJourneyOpen] = useState(false)
   const [taskIndex, setTaskIndex] = useState(0)
   const [decisionFeedback, setDecisionFeedback] = useState<'correct' | 'incorrect' | null>(null)
+  const [linkWarningVisible, setLinkWarningVisible] = useState(false)
   const [completedAttacks, setCompletedAttacks] = useState<Set<string>>(new Set())
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [spokenCharIndex, setSpokenCharIndex] = useState(-1)
+  const [welcomeOpen, setWelcomeOpen] = useState(true)
   const [windowOpen, setWindowOpen] = useState(false)
   const [minimized, setMinimized] = useState(false)
   const [maximized, setMaximized] = useState(false)
@@ -306,6 +310,14 @@ function App() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const restoreLayout = useRef({ position: windowPosition, size: windowSize })
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
+
+  useEffect(() => {
+    playSound('notify')
+  }, [])
+
+  useEffect(() => {
+    setLinkWarningVisible(false)
+  }, [selectedEmailId])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -542,6 +554,31 @@ function App() {
 
   return (
     <main className={`windows-desktop ${theme}-mode`}>
+      {welcomeOpen && (
+        <div className="welcome-overlay">
+          <div className="welcome-card">
+            <span className="welcome-badge">🛡️ BEC Cybersecurity Awareness</span>
+            <h1 className="welcome-title">Welcome</h1>
+            <p className="welcome-text">
+              This is a simulated desktop where you'll learn to recognize social engineering attacks like
+              phishing, smishing, and vishing.
+            </p>
+            <p className="welcome-text">
+              Explore Mail, Messages, and Phone from the desktop icons, and open the Social Engineering menu
+              at the top to start a guided training module.
+            </p>
+            <button
+              className="journey-button primary welcome-button"
+              onClick={() => {
+                playSound('click')
+                setWelcomeOpen(false)
+              }}
+            >
+              Get Started
+            </button>
+          </div>
+        </div>
+      )}
       <div className="content-topbar">
         <span className="content-topbar-title">Cybersecurity Awareness Training</span>
         <div className="content-dropdown" ref={dropdownRef}>
@@ -683,6 +720,26 @@ function App() {
                         </div>
                       </div>
                       <div className="mail-reading-body">{selectedEmail.body}</div>
+                      {selectedEmail.link && (
+                        <a
+                          href="#"
+                          className="mail-body-link"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            playSound('error')
+                            setLinkWarningVisible(true)
+                          }}
+                        >
+                          {selectedEmail.link}
+                        </a>
+                      )}
+                      {linkWarningVisible && (
+                        <div className="mail-link-warning">
+                          ⚠️ Never click links in emails you don't fully trust - this is exactly how phishing attacks
+                          steal credentials or install malware.
+                          <button onClick={() => setLinkWarningVisible(false)}>Got it</button>
+                        </div>
+                      )}
                       {journeyOpen &&
                         PHISHING_TASKS[taskIndex].id === 'decide' &&
                         selectedEmail.id === PHISHING_TARGET_EMAIL_ID && (
