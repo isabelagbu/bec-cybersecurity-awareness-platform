@@ -901,6 +901,132 @@ button {
   color: var(--text-primary);
 }
 
+.call-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 24px;
+  overflow-y: auto;
+  background: var(--bg-tertiary);
+}
+
+.call-avatar-large {
+  width: 88px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.call-avatar-large.ringing {
+  animation: call-avatar-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes call-avatar-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.call-screen-name {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.call-screen-number {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.call-screen-status {
+  margin-top: 4px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.call-screen-status.pulsing {
+  animation: call-status-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes call-status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.call-screen-actions {
+  display: flex;
+  gap: 32px;
+}
+
+.call-action-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s;
+}
+
+.call-action-button:hover {
+  transform: scale(1.06);
+}
+
+.call-action-button.accept {
+  background: #3ca05a;
+  transform: rotate(0deg);
+}
+
+.call-action-button.decline {
+  background: #c0392b;
+  transform: rotate(135deg);
+}
+
+.call-action-button.decline:hover {
+  transform: rotate(135deg) scale(1.06);
+}
+
+.call-action-button.decline-disabled {
+  background: #c0392b;
+}
+
+.call-action-button.hang-up {
+  margin-top: 24px;
+  transform: rotate(135deg);
+}
+
+.call-action-button.hang-up:hover {
+  transform: rotate(135deg) scale(1.06);
+}
+
+.call-action-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.call-captions {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 8px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  text-align: center;
+}
+
 .content-topbar {
   position: relative;
   display: flex;
@@ -1236,6 +1362,11 @@ button {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
+}
+
+.phone-decision {
+  width: 100%;
+  max-width: 320px;
 }
 
 .mail-decision-feedback {
