@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { playSound } from './soundEffects'
+import { ControlPanel } from './ControlPanel'
 
 type Email = {
   id: string
@@ -470,7 +471,7 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [menuOpen, setMenuOpen] = useState(false)
   const [selectedAttack, setSelectedAttack] = useState<string | null>(null)
-  const [activeApp, setActiveApp] = useState<'training' | 'mail' | 'browser' | 'messages' | 'phone'>('training')
+  const [activeApp, setActiveApp] = useState<'training' | 'mail' | 'browser' | 'messages' | 'phone' | 'control-panel'>('training')
   const [mailFolder, setMailFolder] = useState<'inbox' | 'sent' | 'trash'>('inbox')
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(INBOX_EMAILS[0].id)
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(CONVERSATIONS[0].id)
@@ -738,6 +739,7 @@ function App() {
     browser: 'Browser',
     messages: 'Messages',
     phone: 'Phone',
+    'control-panel': 'Control Panel',
   }
 
   const currentFolderEmails = FOLDER_EMAILS[mailFolder]
@@ -751,7 +753,7 @@ function App() {
     setSelectedEmailId(FOLDER_EMAILS[folder][0]?.id ?? null)
   }
 
-  const openApp = (app: 'training' | 'mail' | 'browser' | 'messages' | 'phone') => {
+  const openApp = (app: 'training' | 'mail' | 'browser' | 'messages' | 'phone' | 'control-panel') => {
     playSound('notify')
     setActiveApp(app)
     setWindowOpen(true)
@@ -947,6 +949,10 @@ function App() {
           <button className="desktop-icon" title="Phone" onClick={() => openApp('phone')}>
             <span className="desktop-icon-symbol">☎️</span>
             <span className="desktop-icon-label">Phone</span>
+          </button>
+          <button className="desktop-icon" title="Control Panel" onClick={() => openApp('control-panel')}>
+            <span className="desktop-icon-symbol">⚙️</span>
+            <span className="desktop-icon-label">Control Panel</span>
           </button>
         </div>
         {windowOpen && !minimized && (
@@ -1172,6 +1178,7 @@ function App() {
                 )}
               </div>
             )}
+            {activeApp === 'control-panel' && <ControlPanel />}
             {activeApp === 'phone' && !(journeyOpen && currentJourney?.app === 'phone' && callPhase !== 'idle') && (
               <div className="phone-app">
                 <div className="phone-call-list">

@@ -1436,3 +1436,92 @@ button {
     font-size: 20px;
   }
 }
+
+.control-panel-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.control-panel-login {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 440px;
+  margin: 60px auto;
+  padding: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.control-panel-login h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.control-panel-subtext {
+  margin: 0 0 4px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.control-panel-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.control-panel-login input {
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.control-panel-login .journey-button {
+  padding: 12px 16px;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.control-panel-error {
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: rgba(230, 90, 90, 0.12);
+  color: #c0392b;
+  font-size: 12px;
+}
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.control-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.control-panel-header .journey-button {
+  width: auto;
+  padding: 6px 12px;
+}
+
+.control-panel-body {
+  padding: 16px;
+}
