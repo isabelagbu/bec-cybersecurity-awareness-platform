@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, type Auth } from 'firebase/auth'
+import { getFirestore, type Firestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,4 +15,6 @@ export const firebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfi
 
 // getAuth() throws synchronously on a missing/invalid API key, which would take down the
 // whole app before .env.local is filled in - only initialize once real config is present.
-export const auth: Auth | null = firebaseConfigured ? getAuth(initializeApp(firebaseConfig)) : null
+const app = firebaseConfigured ? initializeApp(firebaseConfig) : null
+export const auth: Auth | null = app ? getAuth(app) : null
+export const db: Firestore | null = app ? getFirestore(app) : null

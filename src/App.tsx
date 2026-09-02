@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { playSound } from './soundEffects'
 import { ControlPanel } from './ControlPanel'
+import { recordTrainingCompleted, recordTrainingStarted } from './metrics'
+import { slugifyTraining, trainingModuleFromSlug, type TrainingModuleName } from './trainingModules'
 
 type Email = {
   id: string
@@ -213,30 +215,6 @@ const CALL_LOG: CallLogEntry[] = [
   },
 ]
 
-const SOCIAL_ENGINEERING_ATTACKS = [
-  'Phishing',
-  'Spear Phishing',
-  'Whaling',
-  'Vishing',
-  'Smishing',
-  'Baiting',
-  'Quid Pro Quo',
-  'Tailgating',
-  'Shoulder Surfing',
-  'Dumpster Diving',
-  'Scareware',
-  'DDoS Attack',
-  'SQL Injection',
-  'Man-in-the-Middle (MITM)',
-  'Ransomware Attack',
-  'Zero-Day Exploit',
-  'Malware Attack',
-  'DNS Spoofing',
-  'Brute Force Attack',
-  'Cross-Site Scripting (XSS)',
-  'Business Email Compromise (BEC)',
-]
-
 type Task = {
   id: 'intro' | 'open-app' | 'open-item' | 'decide' | 'outro' | 'complete'
   narration: string
@@ -408,7 +386,7 @@ const VISHING_TASKS: Task[] = [
 
 const VISHING_TARGET_CALL_ID = 'p2'
 
-const ATTACK_JOURNEYS: Partial<Record<string, AttackJourney>> = {
+const ATTACK_JOURNEYS: Record<TrainingModuleName, AttackJourney> = {
   Phishing: { app: 'mail', targetId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
   'Spear Phishing': { app: 'mail', targetId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
   Whaling: { app: 'mail', targetId: WHALING_TARGET_EMAIL_ID, tasks: WHALING_TASKS },
@@ -469,8 +447,6 @@ function App() {
   const [dragging, setDragging] = useState(false)
   const [resizing, setResizing] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [selectedAttack, setSelectedAttack] = useState<string | null>(null)
   const [activeApp, setActiveApp] = useState<'training' | 'mail' | 'browser' | 'messages' | 'phone' | 'control-panel'>('training')
   const [mailFolder, setMailFolder] = useState<'inbox' | 'sent' | 'trash'>('inbox')
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(INBOX_EMAILS[0].id)
@@ -480,11 +456,10 @@ function App() {
   const [callSeconds, setCallSeconds] = useState(0)
   const [callCaptionIndex, setCallCaptionIndex] = useState(-1)
   const [journeyOpen, setJourneyOpen] = useState(false)
-  const [activeJourneyAttack, setActiveJourneyAttack] = useState<string | null>(null)
+  const [activeJourneyAttack, setActiveJourneyAttack] = useState<TrainingModuleName | null>(null)
   const [taskIndex, setTaskIndex] = useState(0)
   const [decisionFeedback, setDecisionFeedback] = useState<'correct' | 'incorrect' | null>(null)
   const [linkWarningVisible, setLinkWarningVisible] = useState(false)
-  const [completedAttacks, setCompletedAttacks] = useState<Set<string>>(new Set())
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [spokenCharIndex, setSpokenCharIndex] = useState(-1)
   const [welcomeOpen, setWelcomeOpen] = useState(true)
@@ -493,9 +468,9 @@ function App() {
   const [maximized, setMaximized] = useState(false)
   const dragOffset = useRef({ x: 0, y: 0 })
   const resizeOffset = useRef({ startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const restoreLayout = useRef({ position: windowPosition, size: windowSize })
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
+  const startRecordedRef = useRef(false)
 
   const currentJourney = activeJourneyAttack ? ATTACK_JOURNEYS[activeJourneyAttack] : undefined
   const currentJourneyTasks = currentJourney?.tasks ?? PHISHING_TASKS
@@ -504,18 +479,29 @@ function App() {
     setLinkWarningVisible(false)
   }, [selectedEmailId])
 
+  // Anonymous trainees land here via a link generated in the Control Panel
+  // (?training=<slug>) - jump straight into that module's journey.
   useEffect(() => {
-    if (!menuOpen) return
+    if (startRecordedRef.current) return
+    const slug = new URLSearchParams(window.location.search).get('training')
+    if (!slug) return
+    const moduleName = trainingModuleFromSlug(slug)
+    if (!moduleName) return
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
+    startRecordedRef.current = true
+    setWelcomeOpen(false)
+    setActiveJourneyAttack(moduleName)
+    setTaskIndex(0)
+    setDecisionFeedback(null)
+    setCallPhase('idle')
+    setCallSeconds(0)
+    setCallCaptionIndex(-1)
+    setJourneyOpen(true)
+    setWindowOpen(false)
+    setMinimized(false)
+    setMaximized(false)
+    recordTrainingStarted(slug)
+  }, [])
 
   useEffect(() => {
     const loadVoices = () => {
@@ -779,24 +765,6 @@ function App() {
     }
   }
 
-  const selectAttack = (attack: string) => {
-    playSound('click')
-    setSelectedAttack(attack)
-    setMenuOpen(false)
-    if (ATTACK_JOURNEYS[attack]) {
-      setActiveJourneyAttack(attack)
-      setTaskIndex(0)
-      setDecisionFeedback(null)
-      setCallPhase('idle')
-      setCallSeconds(0)
-      setCallCaptionIndex(-1)
-      setJourneyOpen(true)
-      setWindowOpen(false)
-      setMinimized(false)
-      setMaximized(false)
-    }
-  }
-
   const closeJourney = () => {
     playSound('click')
     window.speechSynthesis.cancel()
@@ -839,7 +807,7 @@ function App() {
   const finishJourney = () => {
     playSound('success')
     if (activeJourneyAttack) {
-      setCompletedAttacks((prev) => new Set(prev).add(activeJourneyAttack))
+      recordTrainingCompleted(slugifyTraining(activeJourneyAttack))
     }
     setJourneyOpen(false)
   }
@@ -898,30 +866,6 @@ function App() {
       )}
       <div className="content-topbar">
         <span className="content-topbar-title">Cybersecurity Awareness Training</span>
-        <div className="content-dropdown" ref={dropdownRef}>
-          <button
-            className="dropdown-toggle"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-          >
-            {selectedAttack ?? 'Social Engineering'}
-            <span className="dropdown-caret">{menuOpen ? '▲' : '▼'}</span>
-          </button>
-          {menuOpen && (
-            <ol className="dropdown-menu">
-              {SOCIAL_ENGINEERING_ATTACKS.map((attack) => (
-                <li
-                  key={attack}
-                  className={attack === selectedAttack ? 'selected' : ''}
-                  onClick={() => selectAttack(attack)}
-                >
-                  {attack}
-                  {completedAttacks.has(attack) && <span className="attack-complete"> ✓</span>}
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
         {journeyOpen && (
           <div className="topbar-progress">
             <div

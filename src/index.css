@@ -1045,77 +1045,6 @@ button {
   text-align: center;
 }
 
-.content-dropdown {
-  position: relative;
-}
-
-.dropdown-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--accent-color);
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.dropdown-toggle:hover {
-  background: var(--accent-hover);
-}
-
-.dropdown-caret {
-  font-size: 10px;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  min-width: 260px;
-  max-height: 320px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 8px 0;
-  list-style: none;
-  counter-reset: attack-item;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  z-index: 10;
-}
-
-.dropdown-menu li {
-  counter-increment: attack-item;
-  padding: 6px 16px;
-  font-size: 13px;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.dropdown-menu li::before {
-  content: counter(attack-item) ". ";
-  color: var(--text-secondary);
-}
-
-.dropdown-menu li:hover {
-  background: var(--bg-secondary);
-}
-
-.dropdown-menu li.selected {
-  background: var(--accent-color);
-  color: #ffffff;
-}
-
-.dropdown-menu li.selected::before {
-  color: rgba(255, 255, 255, 0.8);
-}
-
 .theme-toggle {
   background: transparent;
   border: none;
@@ -1172,15 +1101,6 @@ button {
   height: 32px;
   background: rgba(0, 0, 0, 0.1);
   margin: 0 4px;
-}
-
-.attack-complete {
-  color: var(--accent-color);
-  font-weight: 700;
-}
-
-.dropdown-menu li.selected .attack-complete {
-  color: #ffffff;
 }
 
 .coach-panel {
@@ -1524,4 +1444,145 @@ button {
 
 .control-panel-body {
   padding: 16px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.control-panel-trainings {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+}
+
+.control-panel-training-list {
+  width: 260px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  counter-reset: attack-item;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.control-panel-training-item {
+  counter-increment: attack-item;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.control-panel-training-item::before {
+  content: counter(attack-item) '. ';
+  color: var(--text-secondary);
+  margin-right: 2px;
+}
+
+.control-panel-training-item:hover:not(.unavailable) {
+  background: var(--bg-primary);
+}
+
+.control-panel-training-item.active {
+  background: var(--accent-color);
+  color: #ffffff;
+}
+
+.control-panel-training-item.active::before {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.control-panel-training-item.unavailable {
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.control-panel-training-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+.control-panel-training-detail {
+  flex: 1;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.control-panel-training-detail h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.control-panel-training-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.control-panel-link-row {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.control-panel-link-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.control-panel-link-row .journey-button {
+  width: auto;
+  padding: 9px 16px;
+  flex-shrink: 0;
+}
+
+.control-panel-metrics {
+  display: flex;
+  gap: 12px;
+}
+
+.control-panel-metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+}
+
+.control-panel-metric-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.control-panel-metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
