@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { playSound } from './soundEffects'
+import { ControlPanel } from './ControlPanel'
+import { recordTrainingCompleted, recordTrainingStarted } from './metrics'
+import { slugifyTraining, trainingModuleFromSlug, type TrainingModuleName } from './trainingModules'
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+
+const MIN_WINDOW_WIDTH = 420
+const MIN_WINDOW_HEIGHT = 360
 
 type Email = {
   id: string
@@ -212,30 +220,6 @@ const CALL_LOG: CallLogEntry[] = [
   },
 ]
 
-const SOCIAL_ENGINEERING_ATTACKS = [
-  'Phishing',
-  'Spear Phishing',
-  'Whaling',
-  'Vishing',
-  'Smishing',
-  'Baiting',
-  'Quid Pro Quo',
-  'Tailgating',
-  'Shoulder Surfing',
-  'Dumpster Diving',
-  'Scareware',
-  'DDoS Attack',
-  'SQL Injection',
-  'Man-in-the-Middle (MITM)',
-  'Ransomware Attack',
-  'Zero-Day Exploit',
-  'Malware Attack',
-  'DNS Spoofing',
-  'Brute Force Attack',
-  'Cross-Site Scripting (XSS)',
-  'Business Email Compromise (BEC)',
-]
-
 type Task = {
   id: 'intro' | 'open-app' | 'open-item' | 'decide' | 'outro' | 'complete'
   narration: string
@@ -407,7 +391,7 @@ const VISHING_TASKS: Task[] = [
 
 const VISHING_TARGET_CALL_ID = 'p2'
 
-const ATTACK_JOURNEYS: Partial<Record<string, AttackJourney>> = {
+const ATTACK_JOURNEYS: Record<TrainingModuleName, AttackJourney> = {
   Phishing: { app: 'mail', targetId: PHISHING_TARGET_EMAIL_ID, tasks: PHISHING_TASKS },
   'Spear Phishing': { app: 'mail', targetId: SPEAR_PHISHING_TARGET_EMAIL_ID, tasks: SPEAR_PHISHING_TASKS },
   Whaling: { app: 'mail', targetId: WHALING_TARGET_EMAIL_ID, tasks: WHALING_TASKS },
@@ -468,9 +452,7 @@ function App() {
   const [dragging, setDragging] = useState(false)
   const [resizing, setResizing] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [selectedAttack, setSelectedAttack] = useState<string | null>(null)
-  const [activeApp, setActiveApp] = useState<'training' | 'mail' | 'browser' | 'messages' | 'phone'>('training')
+  const [activeApp, setActiveApp] = useState<'training' | 'mail' | 'browser' | 'messages' | 'phone' | 'control-panel'>('training')
   const [mailFolder, setMailFolder] = useState<'inbox' | 'sent' | 'trash'>('inbox')
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(INBOX_EMAILS[0].id)
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(CONVERSATIONS[0].id)
@@ -479,22 +461,22 @@ function App() {
   const [callSeconds, setCallSeconds] = useState(0)
   const [callCaptionIndex, setCallCaptionIndex] = useState(-1)
   const [journeyOpen, setJourneyOpen] = useState(false)
-  const [activeJourneyAttack, setActiveJourneyAttack] = useState<string | null>(null)
+  const [activeJourneyAttack, setActiveJourneyAttack] = useState<TrainingModuleName | null>(null)
   const [taskIndex, setTaskIndex] = useState(0)
   const [decisionFeedback, setDecisionFeedback] = useState<'correct' | 'incorrect' | null>(null)
   const [linkWarningVisible, setLinkWarningVisible] = useState(false)
-  const [completedAttacks, setCompletedAttacks] = useState<Set<string>>(new Set())
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [spokenCharIndex, setSpokenCharIndex] = useState(-1)
   const [welcomeOpen, setWelcomeOpen] = useState(true)
+  const [linkedTraining, setLinkedTraining] = useState<TrainingModuleName | null>(null)
   const [windowOpen, setWindowOpen] = useState(false)
   const [minimized, setMinimized] = useState(false)
   const [maximized, setMaximized] = useState(false)
   const dragOffset = useRef({ x: 0, y: 0 })
-  const resizeOffset = useRef({ startX: 0, startY: 0, startWidth: 0, startHeight: 0 })
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const resizeOffset = useRef({ startX: 0, startY: 0, startWidth: 0, startHeight: 0, startPosX: 0, startPosY: 0 })
   const restoreLayout = useRef({ position: windowPosition, size: windowSize })
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
+  const startRecordedRef = useRef(false)
 
   const currentJourney = activeJourneyAttack ? ATTACK_JOURNEYS[activeJourneyAttack] : undefined
   const currentJourneyTasks = currentJourney?.tasks ?? PHISHING_TASKS
@@ -503,18 +485,33 @@ function App() {
     setLinkWarningVisible(false)
   }, [selectedEmailId])
 
+  // Anonymous trainees land here via a link generated in the Control Panel
+  // (?training=<slug>) - tailor the welcome card to that module; the actual
+  // journey (and its speech narration) only starts once they click through,
+  // since browsers block audio autoplay without a user gesture.
   useEffect(() => {
-    if (!menuOpen) return
+    if (startRecordedRef.current) return
+    const slug = new URLSearchParams(window.location.search).get('training')
+    if (!slug) return
+    const moduleName = trainingModuleFromSlug(slug)
+    if (!moduleName) return
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
+    startRecordedRef.current = true
+    setLinkedTraining(moduleName)
+  }, [])
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
+  const launchJourney = (moduleName: TrainingModuleName) => {
+    setActiveJourneyAttack(moduleName)
+    setTaskIndex(0)
+    setDecisionFeedback(null)
+    setCallPhase('idle')
+    setCallSeconds(0)
+    setCallCaptionIndex(-1)
+    setJourneyOpen(true)
+    setWindowOpen(false)
+    setMinimized(false)
+    setMaximized(false)
+  }
 
   useEffect(() => {
     const loadVoices = () => {
@@ -691,7 +688,7 @@ function App() {
     window.addEventListener('pointerup', handlePointerUp)
   }
 
-  const startResizing = (event: React.PointerEvent<HTMLDivElement>) => {
+  const startResizing = (event: React.PointerEvent<HTMLDivElement>, direction: ResizeDirection) => {
     event.preventDefault()
     event.stopPropagation()
 
@@ -703,21 +700,43 @@ function App() {
       startY: event.clientY,
       startWidth: windowSize.width,
       startHeight: windowSize.height,
+      startPosX: windowPosition.x,
+      startPosY: windowPosition.y,
     }
 
     setResizing(true)
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      const deltaX = moveEvent.clientX - resizeOffset.current.startX
-      const deltaY = moveEvent.clientY - resizeOffset.current.startY
+      const { startX, startY, startWidth, startHeight, startPosX, startPosY } = resizeOffset.current
+      const deltaX = moveEvent.clientX - startX
+      const deltaY = moveEvent.clientY - startY
 
-      const maxWidth = Math.max(0, desktopArea.width - windowPosition.x)
-      const maxHeight = Math.max(0, desktopArea.height - windowPosition.y)
+      let nextWidth = startWidth
+      let nextHeight = startHeight
+      let nextX = startPosX
+      let nextY = startPosY
 
-      const nextWidth = Math.min(Math.max(resizeOffset.current.startWidth + deltaX, 420), maxWidth)
-      const nextHeight = Math.min(Math.max(resizeOffset.current.startHeight + deltaY, 360), maxHeight)
+      if (direction.includes('e')) {
+        const maxWidth = Math.max(MIN_WINDOW_WIDTH, desktopArea.width - startPosX)
+        nextWidth = Math.min(Math.max(startWidth + deltaX, MIN_WINDOW_WIDTH), maxWidth)
+      }
+      if (direction.includes('w')) {
+        const maxWidth = startPosX + startWidth
+        nextWidth = Math.min(Math.max(startWidth - deltaX, MIN_WINDOW_WIDTH), maxWidth)
+        nextX = startPosX + (startWidth - nextWidth)
+      }
+      if (direction.includes('s')) {
+        const maxHeight = Math.max(MIN_WINDOW_HEIGHT, desktopArea.height - startPosY)
+        nextHeight = Math.min(Math.max(startHeight + deltaY, MIN_WINDOW_HEIGHT), maxHeight)
+      }
+      if (direction.includes('n')) {
+        const maxHeight = startPosY + startHeight
+        nextHeight = Math.min(Math.max(startHeight - deltaY, MIN_WINDOW_HEIGHT), maxHeight)
+        nextY = startPosY + (startHeight - nextHeight)
+      }
 
       setWindowSize({ width: nextWidth, height: nextHeight })
+      setWindowPosition({ x: nextX, y: nextY })
     }
 
     const handlePointerUp = () => {
@@ -738,6 +757,7 @@ function App() {
     browser: 'Browser',
     messages: 'Messages',
     phone: 'Phone',
+    'control-panel': 'Control Panel',
   }
 
   const currentFolderEmails = FOLDER_EMAILS[mailFolder]
@@ -751,7 +771,7 @@ function App() {
     setSelectedEmailId(FOLDER_EMAILS[folder][0]?.id ?? null)
   }
 
-  const openApp = (app: 'training' | 'mail' | 'browser' | 'messages' | 'phone') => {
+  const openApp = (app: 'training' | 'mail' | 'browser' | 'messages' | 'phone' | 'control-panel') => {
     playSound('notify')
     setActiveApp(app)
     setWindowOpen(true)
@@ -774,24 +794,6 @@ function App() {
     } else {
       restoreLayout.current = { position: windowPosition, size: windowSize }
       setMaximized(true)
-    }
-  }
-
-  const selectAttack = (attack: string) => {
-    playSound('click')
-    setSelectedAttack(attack)
-    setMenuOpen(false)
-    if (ATTACK_JOURNEYS[attack]) {
-      setActiveJourneyAttack(attack)
-      setTaskIndex(0)
-      setDecisionFeedback(null)
-      setCallPhase('idle')
-      setCallSeconds(0)
-      setCallCaptionIndex(-1)
-      setJourneyOpen(true)
-      setWindowOpen(false)
-      setMinimized(false)
-      setMaximized(false)
     }
   }
 
@@ -837,7 +839,7 @@ function App() {
   const finishJourney = () => {
     playSound('success')
     if (activeJourneyAttack) {
-      setCompletedAttacks((prev) => new Set(prev).add(activeJourneyAttack))
+      recordTrainingCompleted(slugifyTraining(activeJourneyAttack))
     }
     setJourneyOpen(false)
   }
@@ -874,19 +876,28 @@ function App() {
           <div className="welcome-card">
             <span className="welcome-badge">🛡️ BEC Cybersecurity Awareness</span>
             <h1 className="welcome-title">Welcome</h1>
-            <p className="welcome-text">
-              This is a simulated desktop where you'll learn to recognize social engineering attacks like
-              phishing, smishing, and vishing.
-            </p>
-            <p className="welcome-text">
-              Explore Mail, Messages, and Phone from the desktop icons, and open the Social Engineering menu
-              at the top to start a guided training module.
-            </p>
+            {linkedTraining ? (
+              <>
+                <p className="welcome-text">
+                  You've been invited to complete the <strong>{linkedTraining}</strong> training module - a
+                  short, guided exercise to help you recognize this kind of social engineering attack.
+                </p>
+                <p className="welcome-text">Click Get Started when you're ready to begin.</p>
+              </>
+            ) : (
+              <p className="welcome-text">
+                This is a simulated desktop where you'll learn to recognize social engineering attacks.
+              </p>
+            )}
             <button
               className="journey-button primary welcome-button"
               onClick={() => {
                 playSound('click')
                 setWelcomeOpen(false)
+                if (linkedTraining) {
+                  launchJourney(linkedTraining)
+                  recordTrainingStarted(slugifyTraining(linkedTraining))
+                }
               }}
             >
               Get Started
@@ -896,30 +907,6 @@ function App() {
       )}
       <div className="content-topbar">
         <span className="content-topbar-title">Cybersecurity Awareness Training</span>
-        <div className="content-dropdown" ref={dropdownRef}>
-          <button
-            className="dropdown-toggle"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-          >
-            {selectedAttack ?? 'Social Engineering'}
-            <span className="dropdown-caret">{menuOpen ? '▲' : '▼'}</span>
-          </button>
-          {menuOpen && (
-            <ol className="dropdown-menu">
-              {SOCIAL_ENGINEERING_ATTACKS.map((attack) => (
-                <li
-                  key={attack}
-                  className={attack === selectedAttack ? 'selected' : ''}
-                  onClick={() => selectAttack(attack)}
-                >
-                  {attack}
-                  {completedAttacks.has(attack) && <span className="attack-complete"> ✓</span>}
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
         {journeyOpen && (
           <div className="topbar-progress">
             <div
@@ -947,6 +934,12 @@ function App() {
           <button className="desktop-icon" title="Phone" onClick={() => openApp('phone')}>
             <span className="desktop-icon-symbol">☎️</span>
             <span className="desktop-icon-label">Phone</span>
+          </button>
+        </div>
+        <div className="desktop-icons desktop-icons-bottom-left">
+          <button className="desktop-icon" title="Control Panel" onClick={() => openApp('control-panel')}>
+            <span className="desktop-icon-symbol">⚙️</span>
+            <span className="desktop-icon-label">Control Panel</span>
           </button>
         </div>
         {windowOpen && !minimized && (
@@ -979,7 +972,18 @@ function App() {
             </div>
           </div>
 
-          <div className="resize-handle" onPointerDown={maximized ? undefined : startResizing} aria-label="Resize window" />
+          {!maximized && (
+            <>
+              <div className="resize-handle resize-handle-n" onPointerDown={(event) => startResizing(event, 'n')} aria-label="Resize window from top" />
+              <div className="resize-handle resize-handle-s" onPointerDown={(event) => startResizing(event, 's')} aria-label="Resize window from bottom" />
+              <div className="resize-handle resize-handle-e" onPointerDown={(event) => startResizing(event, 'e')} aria-label="Resize window from right" />
+              <div className="resize-handle resize-handle-w" onPointerDown={(event) => startResizing(event, 'w')} aria-label="Resize window from left" />
+              <div className="resize-handle resize-handle-ne" onPointerDown={(event) => startResizing(event, 'ne')} aria-label="Resize window from top right" />
+              <div className="resize-handle resize-handle-nw" onPointerDown={(event) => startResizing(event, 'nw')} aria-label="Resize window from top left" />
+              <div className="resize-handle resize-handle-se" onPointerDown={(event) => startResizing(event, 'se')} aria-label="Resize window from bottom right" />
+              <div className="resize-handle resize-handle-sw" onPointerDown={(event) => startResizing(event, 'sw')} aria-label="Resize window from bottom left" />
+            </>
+          )}
           <div className="blank-window-body">
             {activeApp === 'mail' && (
               <div className="mail-app">
@@ -1172,6 +1176,7 @@ function App() {
                 )}
               </div>
             )}
+            {activeApp === 'control-panel' && <ControlPanel />}
             {activeApp === 'phone' && !(journeyOpen && currentJourney?.app === 'phone' && callPhase !== 'idle') && (
               <div className="phone-app">
                 <div className="phone-call-list">
