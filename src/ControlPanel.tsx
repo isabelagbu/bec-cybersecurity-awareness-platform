@@ -6,7 +6,7 @@ import {
   slugifyTraining,
   type TrainingModuleName,
 } from './trainingModules'
-import { subscribeTrainingMetrics, type TrainingMetrics } from './metrics'
+import { subscribeTrainingMetrics, subscribeTrainingSessions, type TrainingMetrics, type TrainingSession } from './metrics'
 
 function LoginForm() {
   const { login, error } = useAuth()
@@ -62,15 +62,42 @@ function buildTrainingLink(module: TrainingModuleName) {
   return `${window.location.origin}${window.location.pathname}?training=${slugifyTraining(module)}`
 }
 
+// Sessions are reviewed by an Ontario-based admin - show timestamps in
+// Ontario local time regardless of the viewing browser's own timezone.
+function formatOntarioTime(date: Date) {
+  return date.toLocaleString('en-CA', {
+    timeZone: 'America/Toronto',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZoneName: 'short',
+  })
+}
+
+const MIN_LIST_WIDTH = 180
+const MAX_LIST_WIDTH = 480
+
 function TrainingSelector() {
   const [selected, setSelected] = useState<TrainingModuleName | null>(null)
   const [metrics, setMetrics] = useState<TrainingMetrics>({ started: 0, completed: 0 })
+  const [sessions, setSessions] = useState<TrainingSession[]>([])
   const [copied, setCopied] = useState(false)
+  const [listWidth, setListWidth] = useState(260)
+  const [resizingList, setResizingList] = useState(false)
 
   useEffect(() => {
     if (!selected) return
     setMetrics({ started: 0, completed: 0 })
     return subscribeTrainingMetrics(slugifyTraining(selected), setMetrics)
+  }, [selected])
+
+  useEffect(() => {
+    if (!selected) return
+    setSessions([])
+    return subscribeTrainingSessions(slugifyTraining(selected), setSessions)
   }, [selected])
 
   useEffect(() => {
@@ -85,9 +112,28 @@ function TrainingSelector() {
     setCopied(true)
   }
 
+  const startResizingList = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const startX = event.clientX
+    const startWidth = listWidth
+    setResizingList(true)
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const nextWidth = Math.min(Math.max(startWidth + (moveEvent.clientX - startX), MIN_LIST_WIDTH), MAX_LIST_WIDTH)
+      setListWidth(nextWidth)
+    }
+    const handlePointerUp = () => {
+      setResizingList(false)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+    }
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+  }
+
   return (
     <div className="control-panel-trainings">
-      <ol className="control-panel-training-list">
+      <ol className="control-panel-training-list" style={{ width: listWidth }}>
         {ALL_SOCIAL_ENGINEERING_ATTACKS.map((attack) => {
           const available = isAvailableTrainingModule(attack)
           return (
@@ -104,6 +150,11 @@ function TrainingSelector() {
           )
         })}
       </ol>
+      <div
+        className={`control-panel-resizer ${resizingList ? 'resizing' : ''}`}
+        onPointerDown={startResizingList}
+        aria-label="Resize training list"
+      />
       <div className="control-panel-training-detail">
         {selected ? (
           <>
@@ -126,6 +177,33 @@ function TrainingSelector() {
                 <span className="control-panel-metric-value">{metrics.completed}</span>
                 <span className="control-panel-metric-label">Completed</span>
               </div>
+            </div>
+            <div className="control-panel-sessions">
+              <h4>Anonymous visitors</h4>
+              {sessions.length === 0 ? (
+                <p className="control-panel-subtext">No visitors yet.</p>
+              ) : (
+                <div className="control-panel-sessions-table-wrap">
+                  <table className="control-panel-sessions-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Started</th>
+                        <th>Completed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessions.map((session, index) => (
+                        <tr key={session.uid}>
+                          <td>{index + 1}</td>
+                          <td>{session.startedAt ? formatOntarioTime(session.startedAt) : '—'}</td>
+                          <td>{session.completedAt ? formatOntarioTime(session.completedAt) : 'In progress'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         ) : (

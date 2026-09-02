@@ -1,11 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
     match /trainingMetrics/{trainingId} {
       // Only admins (email/password sessions from the Control Panel) can
       // read aggregate metrics - anonymous trainee sessions are excluded.
-      allow read: if request.auth != null
-        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow read: if isAdmin();
 
       // Any authenticated session (anonymous trainee or admin) can update the
       // started/completed counters - actual uniqueness is enforced by the
@@ -16,16 +20,17 @@ service cloud.firestore {
       // One marker doc per uid: recordTrainingStarted/Completed only writes
       // the counter increment when this doc doesn't already exist, so a
       // refreshed or reopened link never double-counts the same visitor.
+      // Admins can list these to see individual start/completion timestamps;
+      // a trainee can only read their own marker (needed for the
+      // "have I already started this?" check in the write transaction).
       match /starters/{uid} {
-        // A trainee's transaction needs to read their own marker doc to
-        // check "have I already started this?" before writing it.
-        allow read: if request.auth != null && request.auth.uid == uid;
+        allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
         allow create: if request.auth != null && request.auth.uid == uid;
         allow update, delete: if false;
       }
 
       match /completers/{uid} {
-        allow read: if request.auth != null && request.auth.uid == uid;
+        allow read: if isAdmin() || (request.auth != null && request.auth.uid == uid);
         allow create: if request.auth != null && request.auth.uid == uid;
         allow update, delete: if false;
       }
