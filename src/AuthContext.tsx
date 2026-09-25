@@ -7,12 +7,27 @@ import {
 } from 'firebase/auth'
 import { auth, firebaseConfigured } from './firebase'
 
+// Firebase Auth only supports email/password, so admin usernames are mapped to a
+// synthetic email on this domain. Create admin accounts in the Firebase console as
+// `<username>@<ADMIN_EMAIL_DOMAIN>`.
+export const ADMIN_EMAIL_DOMAIN = import.meta.env.VITE_ADMIN_EMAIL_DOMAIN || 'admin.bec-training.app'
+
+export function usernameToEmail(username: string) {
+  return `${username.trim().toLowerCase()}@${ADMIN_EMAIL_DOMAIN}`
+}
+
+export function emailToUsername(email: string | null) {
+  if (!email) return ''
+  const suffix = `@${ADMIN_EMAIL_DOMAIN}`
+  return email.endsWith(suffix) ? email.slice(0, -suffix.length) : email
+}
+
 type AuthContextValue = {
   user: User | null
   loading: boolean
   error: string | null
   configured: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (username: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -31,16 +46,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     setError(null)
     if (!auth) {
       setError('Firebase is not configured yet - add your project keys to .env.local.')
       throw new Error('Firebase not configured')
     }
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      await signInWithEmailAndPassword(auth, usernameToEmail(username), password)
     } catch {
-      setError('Invalid email or password.')
+      setError('Invalid username or password.')
       throw new Error('Login failed')
     }
   }

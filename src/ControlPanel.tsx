@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useAuth } from './AuthContext'
+import { emailToUsername, useAuth } from './AuthContext'
 import {
   ALL_SOCIAL_ENGINEERING_ATTACKS,
   isAvailableTrainingModule,
@@ -10,7 +10,7 @@ import { subscribeTrainingMetrics, subscribeTrainingSessions, type TrainingMetri
 
 function LoginForm() {
   const { login, error } = useAuth()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -18,7 +18,7 @@ function LoginForm() {
     event.preventDefault()
     setSubmitting(true)
     try {
-      await login(email, password)
+      await login(username, password)
     } catch {
       // error is surfaced via useAuth().error
     } finally {
@@ -31,12 +31,14 @@ function LoginForm() {
       <h3>Admin Login</h3>
       <p className="control-panel-subtext">Sign in to access the control panel.</p>
       <label>
-        Email
+        Username
         <input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          type="text"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
           autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           required
         />
       </label>
@@ -242,7 +244,7 @@ export function ControlPanel() {
   return (
     <div className="control-panel">
       <div className="control-panel-header">
-        <span>Signed in as {user.email}</span>
+        <span>Signed in as {emailToUsername(user.email)}</span>
         <button className="journey-button" onClick={logout}>
           Sign Out
         </button>
